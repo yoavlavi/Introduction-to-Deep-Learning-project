@@ -320,6 +320,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--fen', type=str, default="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
     parser.add_argument('--resolution', type=int, default=800)
+    parser.add_argument('--output_path', type=str, default="./renders")
     parser.add_argument('--samples', type=int, default=128)
     parser.add_argument('--view', type=str, default='black', choices=['white', 'black'],
                         help='Render from white or black perspective')
@@ -329,7 +330,7 @@ def main():
     global RES, SAMPLES, OUT_DIR
     RES = args.resolution
     SAMPLES = args.samples
-    OUT_DIR = "./renders"
+    OUT_DIR = args.output_path
 
     
     # Get board info
