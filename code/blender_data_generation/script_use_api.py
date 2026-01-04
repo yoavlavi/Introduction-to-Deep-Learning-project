@@ -41,10 +41,10 @@ def generate_dataset():
     view_map = {
         "1": ("1_overhead.png", "overhead"),
         "overhead": ("1_overhead.png", "overhead"),
-        "2": ("2_west.png", "west"),
-        "west": ("2_west.png", "west"),
-        "3": ("3_east.png", "east"),
-        "east": ("3_east.png", "east")
+        "2": ("2_east.png", "east"),
+        "east": ("2_east.png", "east"),
+        "3": ("3_west.png", "west"),
+        "west": ("3_west.png", "west")
     }
 
     choice = input("Enter choice: ").strip().lower()
@@ -57,7 +57,7 @@ def generate_dataset():
     # 5. Iterate through CSV
     with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
-
+        print(1)
         for i, row in enumerate(reader):
             try:
                 frame_id = int(row['from_frame'])
@@ -84,7 +84,8 @@ def generate_dataset():
                 "--",
                 "--fen", fen,
                 "--resolution", str(RESOLUTION),
-                "--output_path", output_dir
+                "--output_path", output_dir,
+                "--view", "white"
             ]
 
             if i == 0:
@@ -162,6 +163,7 @@ def generate_dataset():
                             # from res - res/16 - res/10 to res - res/16
                             right = width - (width / 16)
                             left = width - (width / 16) - (2*(width / 10))
+
                             crop_box = (left, top, right, bottom)
                         # --- CROP LOGIC END ---
 
