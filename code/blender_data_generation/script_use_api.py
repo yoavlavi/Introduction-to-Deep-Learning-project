@@ -35,8 +35,8 @@ def generate_dataset():
     # 4. Select View to Keep and Setup Crop Logic
     print("\nThe Blender script generates 3 views. Which one do you want to keep?")
     print("1. overhead (Keeps '1_overhead.png') - Cropped Center")
-    print("2. west     (Keeps '2_west.png')     - Cropped Right Side")
-    print("3. east     (Keeps '3_east.png')     - Cropped Left Side")
+    print("2. east     (Keeps '2_east.png')     - Cropped Right Side")
+    print("3. west     (Keeps '3_west.png')     - Cropped Left Side")
 
     view_map = {
         "1": ("1_overhead.png", "overhead"),
@@ -85,7 +85,8 @@ def generate_dataset():
                 "--fen", fen,
                 "--resolution", str(RESOLUTION),
                 "--output_path", output_dir,
-                "--view", "white"
+                "--view", "white",
+                "--view_angle", view_type
             ]
 
             if i == 0:
@@ -135,7 +136,7 @@ def generate_dataset():
                             bottom = height * 0.6
                             crop_box = (left, top, right, bottom)
 
-                        elif view_type == "east":
+                        elif view_type == "west":
                             # y same (full height?), x from res/16 to res/16 + res/10
                             # Assuming "y same" implies keeping original Y or specific ratio?
                             # Standard interpretation: keep full height or same as overhead?
@@ -154,7 +155,7 @@ def generate_dataset():
                             right = (width / 16) + (2*(width / 10))
                             crop_box = (left, top, right, bottom)
 
-                        elif view_type == "west":
+                        elif view_type == "east":
                             # Y Crop (Same as overhead):
                             top = height * 0.4
                             bottom = height * 0.6
@@ -182,7 +183,8 @@ def generate_dataset():
                     path_to_remove = os.path.join(output_dir, fname)
                     if os.path.exists(path_to_remove):
                         try:
-                            os.remove(path_to_remove)
+                            #os.remove(path_to_remove)
+                            a = 1
                         except OSError:
                             pass
             else:

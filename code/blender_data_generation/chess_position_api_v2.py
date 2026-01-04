@@ -9,6 +9,7 @@ Strategy:
 Usage:
     blender chess-set.blend --background --python chess_position_api_v2.py -- --fen "r4rk1/1p1bqppp/n1p1pn2/p2pN3/2PP4/P1N3P1/1P1QPPBP/R4RK1" --view black
 """
+from email.policy import default
 
 import bpy
 import math
@@ -284,29 +285,30 @@ def render_all_views(board_info, view='black'):
         z_rotation_offset = 0
     
     for location, name, point_at_center in views:
-        print(f"\nRendering: {name}")
-        
-        bpy.ops.object.camera_add(location=location)
-        cam = bpy.context.active_object
-        
-        if point_at_center:
-            direction = center - cam.location
-            cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
-        else:
-            cam.rotation_euler = (0, 0, 0)
-        
-        # Apply rotation for white/black view
-        cam.rotation_euler.z += z_rotation_offset
-        
-        cam.data.lens = LENS
-        
-        bpy.context.scene.camera = cam
-        bpy.context.scene.render.filepath = f"{OUT_DIR}/{name}.png"
-        bpy.ops.render.render(write_still=True)
-        
-        print(f"  ✓ Saved: {name}.png")
-        
-        bpy.data.objects.remove(cam, do_unlink=True)
+        if(VIEW_ANGLE in name):
+            print(f"\nRendering: {name}")
+
+            bpy.ops.object.camera_add(location=location)
+            cam = bpy.context.active_object
+
+            if point_at_center:
+                direction = center - cam.location
+                cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+            else:
+                cam.rotation_euler = (0, 0, 0)
+
+            # Apply rotation for white/black view
+            cam.rotation_euler.z += z_rotation_offset
+
+            cam.data.lens = LENS
+
+            bpy.context.scene.camera = cam
+            bpy.context.scene.render.filepath = f"{OUT_DIR}/{name}.png"
+            bpy.ops.render.render(write_still=True)
+
+            print(f"  ✓ Saved: {name}.png")
+
+            bpy.data.objects.remove(cam, do_unlink=True)
     
     print("\n✓ Rendering complete")
 
@@ -324,13 +326,15 @@ def main():
     parser.add_argument('--samples', type=int, default=128)
     parser.add_argument('--view', type=str, default='black', choices=['white', 'black'],
                         help='Render from white or black perspective')
+    parser.add_argument('--view_angle', type=str, default='overhead', choices=['overhead', 'east', 'west'],)
     
     args = parser.parse_args(argv)
     
-    global RES, SAMPLES, OUT_DIR
+    global RES, SAMPLES, OUT_DIR, VIEW_ANGLE
     RES = args.resolution
     SAMPLES = args.samples
     OUT_DIR = args.output_path
+    VIEW_ANGLE = args.view_angle
 
     
     # Get board info
