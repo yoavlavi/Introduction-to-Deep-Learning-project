@@ -3,6 +3,14 @@ import torch
 import numpy as np
 from PIL import Image
 
+def plot_loss(losses, title="Training loss"):
+    plt.figure(figsize=(6, 4))
+    plt.plot(losses)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title(title)
+    plt.grid(True)
+    plt.show()
 
 def plot_image_pairs_with_text(image_pairs, texts, denormalize=None):
     """

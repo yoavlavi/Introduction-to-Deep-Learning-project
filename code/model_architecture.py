@@ -115,6 +115,10 @@ def build_model(input_size=(3, 480, 480), config=None, activation_fn=nn.ReLU):
 
     return nn.Sequential(*layers)
 
+def model1():
+    model1_config=[]
+
+    return build_model(model1_config)
 
 # --- Example Usage ---
 def model_exsample():

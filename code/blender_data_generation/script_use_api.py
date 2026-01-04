@@ -7,6 +7,7 @@ from PIL import Image
 
 # --- Configuration ---
 # CRITICAL: Use 'blender.exe', NOT 'blender-launcher.exe'.
+# CRITICAL: Change for your own directory for those files, for some reason relative directory don't work
 BLENDER_EXE = r"C:\Program Files\Blender Foundation\Blender 5.0\blender.exe"
 BLEND_FILE = r"C:\Users\user\Documents\GitHub\Introduction-to-Deep-Learning-project\code\blender_data_generation\chess-set.blend"
 SCRIPT_FILE = r"C:\Users\user\Documents\GitHub\Introduction-to-Deep-Learning-project\code\blender_data_generation\chess_position_api_v2.py"
