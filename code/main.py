@@ -41,6 +41,29 @@ def get_games_directories(games_list):
     return tagges_list, generated_list
 
 
+def load_model_from_file(model, version):
+    """
+    Loads a PyTorch model's state dictionary from the specified file.
+
+    Args:
+        model (torch.nn.Module): The model instance to load weights into.
+        filepath (str): The full path including filename to load the model from.
+
+    Returns:
+        model (torch.nn.Module): The model with loaded weights.
+    """
+    filepath = "model/model_" + version
+    if not os.path.exists(filepath):
+        print(f"Error: File not found at {filepath}")
+        return model
+
+    try:
+        model.load_state_dict(torch.load(filepath))
+        print(f"Model loaded successfully from: {filepath}")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+
+    return model
 def save_model_to_file(model, version):
     """
     Saves the PyTorch model's state dictionary to the specified file.
