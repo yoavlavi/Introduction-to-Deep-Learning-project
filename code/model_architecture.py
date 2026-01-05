@@ -116,9 +116,34 @@ def build_model(input_size=(3, 480, 480), config=None, activation_fn=nn.ReLU):
     return nn.Sequential(*layers)
 
 def model1():
-    model1_config=[]
+    """
+    Builds a model with:
+    - Input: 1x3x480x480
+    - 25 Convolutional Layers
+    - Output: 1x3x160x160 (Fully Convolutional)
+    """
 
-    return build_model(model1_config)
+    config = []
+
+    # --- 25 Convolutional Layers ---
+
+    # Layer 1: Downsample 480 -> 160 using stride 3
+    # (480 + 2*1 - 3) / 3 + 1 = 160
+    config.append(("conv", 16, 3, 3, 1))
+
+    # Layers 2-24: Standard convolutions preserving spatial dims (160x160)
+    for _ in range(8):
+        config.append(("conv", 32, 3, 1, 1))
+
+        # Layer 25: Final convolution mapping to 3 output channels
+    # Still preserves 160x160 size
+    config.append(("conv", 3, 3, 1, 1))
+
+    # Build the model
+    # Note: No 'fc' or 'flatten' layers used.
+    model = build_model(input_size=(3, 480, 480), config=config)
+
+    return model
 
 # --- Example Usage ---
 def model_exsample():

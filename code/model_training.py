@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import copy
-
+from tqdm import tqdm
 
 def train(model, X_train, y_train, X_test, y_test, num_epochs=500, lr=1e-2, loss_fn=None, optimizer=None):
     """
@@ -48,9 +48,8 @@ def train(model, X_train, y_train, X_test, y_test, num_epochs=500, lr=1e-2, loss
         X_test = torch.tensor(X_test, dtype=torch.float32)
     if y_test is not None and not isinstance(y_test, torch.Tensor):
         y_test = torch.tensor(y_test, dtype=torch.float32)
-
     # Training Loop
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs)):
         model.train()  # Set to training mode
 
         if X_train is not None:
@@ -58,7 +57,6 @@ def train(model, X_train, y_train, X_test, y_test, num_epochs=500, lr=1e-2, loss
 
             # Forward pass
             outputs = model(X_train)
-
             # Simple shape check to prevent silent broadcasting bugs with MSE
             if outputs.shape != y_train.shape:
                 print(f"Warning: Output shape {outputs.shape} mismatch with Target {y_train.shape}")
