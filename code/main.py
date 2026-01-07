@@ -29,6 +29,8 @@ def get_all_files_in_directories(directory_list):
     
     for directory in directory_list:
         if not os.path.exists(directory):
+            directory = "../" + directory
+        if not os.path.exists(directory):
             print(f"Warning: Directory not found: {directory}")
             continue
 
@@ -41,8 +43,8 @@ def get_all_files_in_directories(directory_list):
 def get_games_directories(games_list):
     tagges_list, generated_list = [], []
     for game in games_list:
-        tagges_list.append(r"../data/game$_per_frame/tagged_images".replace('$', str(game)))
-        generated_list.append(r"../data/game$_per_frame/generated_images".replace('$', str(game)))
+        tagges_list.append(r"data/game$_per_frame/tagged_images".replace('$', str(game)))
+        generated_list.append(r"data/game$_per_frame/generated_images".replace('$', str(game)))
     return tagges_list, generated_list
 
 def get_model_by_number(model_number):
@@ -137,16 +139,33 @@ def train_new_model(model_number, train_games, test_games, optimizer="Adam", lr=
                                             y_test=y_test, loss_fn=loss_fn,
                                             optimizer=optimizer, num_epochs=num_epochs)
 
-    plot.plot_loss(train_losses)
+    #plot.plot_loss(train_losses)
     if save:
-        save_model_to_file(model_number, best_model, '1.01')
-        save_model_to_file(model_number, model, '1.0')
-    return model
+        #save_model_to_file(model_number, best_model, '1.01')
+        save_model_to_file(model_number, model, '1.1')
+    return model,train_losses
 
 if __name__ == "__main__":
-    model = train_new_model(1, [2,4],[],"SGD", lr=1e-2, loss_fn=nn.MSELoss(), num_epochs=100, save=False)
-    plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
-                                "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
+    #current best lr=1e-4, epoches=70
+    print("lr=1e-4")
+    for i in range(20):
+        print("Training for ", i*5, " epochs")
+        model, train_losses = train_new_model(2, [2,4,5],[],"SGD", lr=1e-4, loss_fn=nn.L1Loss(), num_epochs=i*5, save=False)
+        #ma.get_model_summary(model)
+        #model = load_model_from_file(1, '1.1')
+        plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
+                                        "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
+
+    print("lr 1e-5")
+    for i in range(20):
+        print("Training for ", i*5, " epochs")
+        model, train_losses = train_new_model(2, [2,4,5],[],"SGD", lr=1e-5, loss_fn=nn.L1Loss(), num_epochs=i*5, save=False)
+        #ma.get_model_summary(model)
+        #model = load_model_from_file(1, '1.1')
+        plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
+                                        "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
+    
+
 
 
 

@@ -115,6 +115,15 @@ def build_model(input_size=(3, 480, 480), config=None, activation_fn=nn.ReLU):
 
     return nn.Sequential(*layers)
 
+def model2():
+    config = []
+    config.append(("conv", 16, 3, 3, 1))
+    config.append(("conv", 32, 3, 1, 1))
+    config.append(("conv", 3, 3, 1, 1))
+    model = build_model(input_size=(3, 480, 480), config=config)
+
+    return model
+
 def model1():
     """
     Builds a model with:
@@ -132,8 +141,8 @@ def model1():
     config.append(("conv", 16, 3, 3, 1))
 
     # Layers 2-24: Standard convolutions preserving spatial dims (160x160)
-    for _ in range(8):
-        config.append(("conv", 32, 3, 1, 1))
+    #for _ in range(1):
+    config.append(("conv", 32, 3, 1, 1))
 
         # Layer 25: Final convolution mapping to 3 output channels
     # Still preserves 160x160 size
