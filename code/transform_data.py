@@ -3,6 +3,18 @@ from torchvision import transforms
 from PIL import Image
 from tqdm import tqdm
 
+def transform(size=(480, 480), mean=None, std=None):
+    if mean is None:
+        mean = [0.485, 0.456, 0.406]
+    if std is None:
+        std = [0.229, 0.224, 0.225]
+
+    return transforms.Compose([
+        transforms.Resize(size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+
 def get_data_ready(input_image_paths, target_image_paths, device, target_size=(160, 160)):
     """
     Takes lists of input and target image paths and returns processed tensors.
@@ -22,18 +34,10 @@ def get_data_ready(input_image_paths, target_image_paths, device, target_size=(1
     assert len(input_image_paths) == len(target_image_paths), "Lists must have the same length"
 
     # Define the transformation pipeline
-    input_transform = transforms.Compose([
-        transforms.Resize((480, 480)),
-        transforms.ToTensor(),
-        # Normalize: (mean_R, mean_G, mean_B), (std_R, std_G, std_B)
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    target_transform = transforms.Compose([
-        transforms.Resize(target_size),
-        transforms.ToTensor(),
-        # Normalize targets too if they are images (optional but recommended for stability)
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
+
+    input_transform = transform(size=(480,480))
+
+    target_transform = transform(target_size)
 
     input_tensors = []
     target_tensors = []
