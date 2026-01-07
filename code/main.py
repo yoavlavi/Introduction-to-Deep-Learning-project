@@ -1,8 +1,8 @@
 #from pydantic.experimental.pipeline import transform
+#to run remotly use: tmux
 
 import torch
 import torch.cuda
-from annotated_types.test_cases import cases
 from torchvision import transforms
 import numpy as np
 import os
@@ -24,8 +24,9 @@ def get_all_files_in_directories(directory_list):
         Returns:
             list: A list containing the full paths of all files found.
         """
-    all_files = []
 
+    all_files = []
+    
     for directory in directory_list:
         if not os.path.exists(directory):
             print(f"Warning: Directory not found: {directory}")
@@ -35,7 +36,6 @@ def get_all_files_in_directories(directory_list):
             for file in files:
                 full_path = os.path.join(root, file)
                 all_files.append(full_path)
-
     return all_files
 
 def get_games_directories(games_list):
@@ -97,7 +97,7 @@ def save_model_to_file(model_number, model, version):
         print(f"Error saving model: {e}")
 
 def train_new_model(model_number, train_games, test_games, optimizer="Adam", lr=1e-2,
-                    loss_fn=nn.MSELoss(), num_epochs=1000):
+                    loss_fn=nn.MSELoss(), num_epochs=1000, save=False):
 
     model = get_model_by_number(model_number)
     if torch.cuda.is_available():
@@ -138,20 +138,18 @@ def train_new_model(model_number, train_games, test_games, optimizer="Adam", lr=
                                             optimizer=optimizer, num_epochs=num_epochs)
 
     plot.plot_loss(train_losses)
-    save_model_to_file(model_number, best_model, 'v1.01')
-    save_model_to_file(model_number, model, 'v1.0')
+    if save:
+        save_model_to_file(model_number, best_model, '1.01')
+        save_model_to_file(model_number, model, '1.0')
+    return model
 
 if __name__ == "__main__":
-    train_new_model(1, [2],[],"Adam", lr=1e-2, loss_fn=nn.MSELoss())
+    model = train_new_model(1, [2,4],[],"SGD", lr=1e-2, loss_fn=nn.MSELoss(), num_epochs=100, save=False)
+    plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
+                                "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
 
 
 
 
 
 
-
-
-
-
-
-    #plot.plot_image_pairs_with_text()

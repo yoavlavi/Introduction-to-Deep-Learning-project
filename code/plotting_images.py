@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
-import numpy as np
 from PIL import Image
+from transform_data import transform
 
 def plot_loss(losses, title="Training loss"):
     plt.figure(figsize=(6, 4))
@@ -12,64 +12,55 @@ def plot_loss(losses, title="Training loss"):
     plt.grid(True)
     plt.show()
 
-def plot_image_pairs_with_text(image_pairs, texts, denormalize=None):
+def visualize_model_output(model, image_path, device='cpu'):
     """
-    Plots a list of image pairs side-by-side with a title above each pair.
+    Loads an image, runs it through the model, and plots the original vs output.
 
     Args:
-        image_pairs (list of tuple): List where each element is a tuple (img1, img2).
-                                     Images can be file paths (str), PIL Images, or PyTorch Tensors.
-        texts (list of str): List of titles corresponding to each pair.
-        denormalize (callable, optional): Function to denormalize tensor images before plotting.
-                                          Useful if images were normalized (e.g. ImageNet stats).
+        model (torch.nn.Module): Trained model.
+        image_path (str): Relative path to the input image.
+        device (str or torch.device): Device to run inference on.
     """
-    if len(image_pairs) != len(texts):
-        raise ValueError("Length of image_pairs and texts must match.")
+    model.eval()
+    model.to(device)
 
-    n = len(image_pairs)
-    fig, axes = plt.subplots(n, 2, figsize=(10, 5 * n))
+    # Load and Preprocess
+    img = Image.open(image_path).convert("RGB")
+    
+    # Same stats as used in training
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
 
-    # Handle the case of a single pair (axes is 1D array)
-    if n == 1:
-        axes = axes.reshape(1, -1)
+    preprocess = transform(size=(480, 480))
 
-    for i in range(n):
-        img1, img2 = image_pairs[i]
-        title = texts[i]
 
-        # Helper to process image for display
-        def prepare_image(img):
-            if isinstance(img, str):
-                return Image.open(img).convert("RGB")
-            elif isinstance(img, torch.Tensor):
-                if denormalize:
-                    img = denormalize(img)
-                # Clone to avoid modifying original, detach from graph, move to cpu
-                img = img.clone().detach().cpu()
-                # Convert (C, H, W) -> (H, W, C) for matplotlib
-                if img.dim() == 3 and img.shape[0] in [1, 3]:
-                    img = img.permute(1, 2, 0)
-                # Squeeze single channel dims (e.g. grayscale 1x28x28 -> 28x28)
-                return img.squeeze().numpy()
-            elif isinstance(img, np.ndarray):
-                return img
-            else:
-                return img  # Assume PIL image or compatible
+    input_tensor = preprocess(img).unsqueeze(0).to(device)
 
-        disp_img1 = prepare_image(img1)
-        disp_img2 = prepare_image(img2)
+    # Inference
+    with torch.no_grad():
+        output_tensor = model(input_tensor)
 
-        # Plot first image
-        axes[i, 0].imshow(disp_img1)
-        axes[i, 0].axis('off')
+    # Denormalize for visualization
+    def denormalize(tensor):
+        # clone to avoid modifying original tensor in-place
+        t = tensor.clone().detach().cpu().squeeze(0)
+        for i in range(3):
+            t[i] = t[i] * std[i] + mean[i]
+        return t.permute(1, 2, 0).clamp(0, 1).numpy()
 
-        # Plot second image
-        axes[i, 1].imshow(disp_img2)
-        axes[i, 1].axis('off')
+    original_disp = denormalize(input_tensor)
+    output_disp = denormalize(output_tensor)
 
-        # Set title for the pair centered over both columns
-        # We use the left axis to set the title but position it to cover both
-        axes[i, 0].set_title(title, x=1.1, y=1.05, ha='center', fontsize=12, fontweight='bold')
+    # Plot
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    
+    axes[0].imshow(original_disp)
+    axes[0].set_title("Original Input")
+    axes[0].axis("off")
+
+    axes[1].imshow(output_disp)
+    axes[1].set_title("Model Output")
+    axes[1].axis("off")
 
     plt.tight_layout()
     plt.show()

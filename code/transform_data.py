@@ -34,6 +34,11 @@ def get_data_ready(input_image_paths, target_image_paths, device, target_size=(1
     assert len(input_image_paths) == len(target_image_paths), "Lists must have the same length"
 
     # Define the transformation pipeline
+    if(input_image_paths is [] or target_image_paths is []):
+        return None, None
+    print("input images: ")
+    print(input_image_paths)
+
 
     input_transform = transform(size=(480,480))
 
