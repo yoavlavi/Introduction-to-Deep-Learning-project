@@ -5,9 +5,9 @@ from tqdm import tqdm
 
 def transform(size=(480, 480), mean=None, std=None):
     if mean is None:
-        mean = [0.485, 0.456, 0.406]
+        mean =  [1,1,1] #[0.485, 0.456, 0.406]
     if std is None:
-        std = [0.229, 0.224, 0.225]
+        std = [1,1,1] #[0.229, 0.224, 0.225]
 
     return transforms.Compose([
         transforms.Resize(size),
@@ -36,8 +36,6 @@ def get_data_ready(input_image_paths, target_image_paths, device, target_size=(1
     # Define the transformation pipeline
     if(input_image_paths is [] or target_image_paths is []):
         return None, None
-    print("input images: ")
-    print(input_image_paths)
 
 
     input_transform = transform(size=(480,480))
