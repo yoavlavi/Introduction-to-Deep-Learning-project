@@ -1,4 +1,3 @@
-#from pydantic.experimental.pipeline import transform
 #to run remotly use: tmux
 
 import torch
@@ -12,7 +11,7 @@ import model_architecture as ma
 from model_training import train
 import plotting_images as plot
 import transform_data
-
+import tqdm
 
 def get_all_files_in_directories(directory_list):
     """
@@ -64,7 +63,7 @@ def load_model_from_file(model_number, version):
         model (torch.nn.Module): The model with loaded weights.
     """
     model = get_model_by_number(model_number)
-    filepath = "models/model_" + str(model_number) + '/' + version
+    filepath = "models/model_" + str(model_number) + '/v' + version
     if not os.path.exists(filepath):
         print(f"Error: File not found at {filepath}")
         return model
@@ -98,77 +97,42 @@ def save_model_to_file(model_number, model, version):
     except Exception as e:
         print(f"Error saving model: {e}")
 
-def train_new_model(model_number, train_games, test_games, optimizer="Adam", lr=1e-2,
-                    loss_fn=nn.MSELoss(), num_epochs=1000, save=False):
 
-    model = get_model_by_number(model_number)
+if __name__ == "__main__":
+    #current best lr=1e-4, epoches=70
+
+    model = get_model_by_number(4)
+    lr=1e-4
+    optimizer =optim.SGD(model.parameters(), lr=lr)
+    loss_fn=nn.L1Loss()
+    train_games = [2,4,5]
+    epoch_jump = 100
+    epoch_loop = 20
+
     if torch.cuda.is_available():
         device = torch.device("cuda")
     elif torch.backends.mps.is_available():  # For Apple Silicon GPUs
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
-
-    print("build model")
     model.to(device)
 
-    if optimizer == "Adam":
-        optimizer = optim.Adam(model.parameters(), lr=lr)
-    if optimizer == "SGD":
-        optimizer = optim.SGD(model.parameters(), lr=lr)
 
     train_games_x, train_games_y = get_games_directories(train_games)
-    test_games_x, test_games_y = get_games_directories(test_games)
-
-    print("start load training data")
-    X_train, y_train = transform_data.get_data_ready(
-        get_all_files_in_directories(train_games_x),
-        get_all_files_in_directories(train_games_y), device)
-    X_test, y_test = None, None
-    try:
-        print("start load test data")
-        X_test, y_test = transform_data.get_data_ready(
-            get_all_files_in_directories(test_games_x),
-            get_all_files_in_directories(test_games_y), device)
-    except Exception as e:
-        print("Error: ", e)
-
-    print("start train model")
-    model, best_model, train_losses = train(model=model, X_train=X_train,
-                                            y_train=y_train, X_test=X_test,
-                                            y_test=y_test, loss_fn=loss_fn,
-                                            optimizer=optimizer, num_epochs=num_epochs)
-
-    #plot.plot_loss(train_losses)
-    if save:
-        #save_model_to_file(model_number, best_model, '1.01')
-        save_model_to_file(model_number, model, '1.1')
-    return model,train_losses
-
-if __name__ == "__main__":
-    #current best lr=1e-4, epoches=70
-    print("lr=1e-4")
-    for i in range(20):
-        print("Training for ", i*5, " epochs")
-        model, train_losses = train_new_model(2, [2,4,5],[],"SGD", lr=1e-4, loss_fn=nn.L1Loss(), num_epochs=i*5, save=False)
-        #ma.get_model_summary(model)
-        #model = load_model_from_file(1, '1.1')
-        plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
-                                        "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
-
-    print("lr 1e-5")
-    for i in range(20):
-        print("Training for ", i*5, " epochs")
-        model, train_losses = train_new_model(2, [2,4,5],[],"SGD", lr=1e-5, loss_fn=nn.L1Loss(), num_epochs=i*5, save=False)
-        #ma.get_model_summary(model)
-        #model = load_model_from_file(1, '1.1')
-        plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
-                                        "../data/game2_per_frame/tagged_images/frame_000200.jpg", device='cuda')
+    train_games_x = get_all_files_in_directories(train_games_x)
+    train_games_y = get_all_files_in_directories(train_games_y)
+    #print("start load training data")
     
+    X_train = transform_data.get_data_ready(
+                       train_games_x,
+                       device=device, target_size=(480, 480))
+    y_train = transform_data.get_data_ready(
+                       train_games_y,
+                       device=device, target_size=(160, 160))
 
-
-
-
-
-
-
+    for i in range(tqdm.tqdm(epoch_loop)):
+        print("Training for ", (i+1)*epoch_jump, " epochs")
+        model, train_losses = train(model, X_train, y_train, num_epochs=epoch_jump, lr=1e-4,)
+        plot.visualize_model_output( model, #load_model_from_file(4, '1.370'),
+                                    "../data/game2_per_frame/tagged_images/frame_031800.jpg", device=device)
+    #save_model_to_file(4, model, '1.' + str(i+1))
