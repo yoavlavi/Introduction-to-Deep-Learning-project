@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import torch
 from PIL import Image
 from transform_data import transform
+import transform_data as td
 
 def plot_loss(losses, title="Training loss"):
     plt.figure(figsize=(6, 4))
@@ -12,7 +13,7 @@ def plot_loss(losses, title="Training loss"):
     plt.grid(True)
     plt.show()
 
-def visualize_model_output(model, image_path, device='cpu'):
+def visualize_model_output(model, image_path, device='cuda'):
     """
     Loads an image, runs it through the model, and plots the original vs output.
 
@@ -21,14 +22,15 @@ def visualize_model_output(model, image_path, device='cpu'):
         image_path (str): Relative path to the input image.
         device (str or torch.device): Device to run inference on.
     """
+    model.to(device)
     model.eval()
 #    model.to(device)
     # Load and Preprocess
     img = Image.open(image_path).convert("RGB")
     
     # Same stats as used in training
-    mean = [0.5,0.5,0.5]#[0.485, 0.456, 0.406]
-    std = [0.5,0.5,0.5] #[0.229, 0.224, 0.225]
+    mean = td.get_mean()
+    std = td.get_std()
 
     preprocess = transform(size=(480, 480))
 

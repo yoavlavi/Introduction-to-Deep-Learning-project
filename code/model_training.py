@@ -40,7 +40,7 @@ def train(model, X_train, y_train, num_epochs=50, lr=1e-4, loss_fn=None, optimiz
         y_train = torch.tensor(y_train, dtype=torch.float32)
 
     # Training Loop
-    for epoch in tqdm(range(num_epochs)):
+    for epoch in range(num_epochs):
         model.train()  # Set to training mode
 
         if X_train is not None:

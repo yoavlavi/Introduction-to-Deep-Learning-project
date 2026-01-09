@@ -11,7 +11,7 @@ import model_architecture as ma
 from model_training import train
 import plotting_images as plot
 import transform_data
-
+import tqdm
 
 def get_all_files_in_directories(directory_list):
     """
@@ -63,7 +63,7 @@ def load_model_from_file(model_number, version):
         model (torch.nn.Module): The model with loaded weights.
     """
     model = get_model_by_number(model_number)
-    filepath = "models/model_" + str(model_number) + '/' + version
+    filepath = "models/model_" + str(model_number) + '/v' + version
     if not os.path.exists(filepath):
         print(f"Error: File not found at {filepath}")
         return model
@@ -101,7 +101,13 @@ def save_model_to_file(model_number, model, version):
 if __name__ == "__main__":
     #current best lr=1e-4, epoches=70
 
-    model = get_model_by_number(2)
+    model = get_model_by_number(4)
+    lr=1e-4
+    optimizer =optim.SGD(model.parameters(), lr=lr)
+    loss_fn=nn.L1Loss()
+    train_games = [2,4,5]
+    epoch_jump = 100
+    epoch_loop = 20
 
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -109,28 +115,24 @@ if __name__ == "__main__":
         device = torch.device("mps")
     else:
         device = torch.device("cpu")
-    print(device)
     model.to(device)
-    lr=1e-4
-    optimizer =optim.SGD(model.parameters(), lr=lr)
-    loss_fn=nn.L1Loss()
 
-    train_games = [2,4,5]
 
     train_games_x, train_games_y = get_games_directories(train_games)
+    train_games_x = get_all_files_in_directories(train_games_x)
+    train_games_y = get_all_files_in_directories(train_games_y)
+    #print("start load training data")
+    
+    X_train = transform_data.get_data_ready(
+                       train_games_x,
+                       device=device, target_size=(480, 480))
+    y_train = transform_data.get_data_ready(
+                       train_games_y,
+                       device=device, target_size=(160, 160))
 
-    print("start load training data")
-    X_train, y_train = transform_data.get_data_ready(
-                       get_all_files_in_directories(train_games_x),
-                       get_all_files_in_directories(train_games_y), 
-                       device)
-
-    print("lr=1e-4")
-    for i in range(20):
-        print("Training for ", (i+1)*5, " epochs")
-        model, train_losses = train(model, X_train, y_train, num_epochs=5, lr=1e-4,)
-        #ma.get_model_summary(model)
-        #model = load_model_from_file(1, '1.1')
-        plot.visualize_model_output(model, #load_model_from_file(1, 'v1.0'),
-                                        "../data/game2_per_frame/tagged_images/frame_000200.jpg", device=device)
-
+    for i in range(tqdm.tqdm(epoch_loop)):
+        print("Training for ", (i+1)*epoch_jump, " epochs")
+        model, train_losses = train(model, X_train, y_train, num_epochs=epoch_jump, lr=1e-4,)
+        plot.visualize_model_output( model, #load_model_from_file(4, '1.370'),
+                                    "../data/game2_per_frame/tagged_images/frame_031800.jpg", device=device)
+    #save_model_to_file(4, model, '1.' + str(i+1))
