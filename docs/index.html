@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sim-to-Real Chessboard State Prediction</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; max-width: 980px; line-height: 1.6; }
+    h1, h2, h3 { color: #222; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px 18px; margin: 16px 0; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    img { max-width: 100%; border: 1px solid #ccc; border-radius: 8px; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 6px; }
+    ul { margin-top: 8px; }
+    .small { color: #555; font-size: 0.95em; }
+  </style>
+</head>
+<body>
+
+
+<h1>Sim-to-Real Chessboard State Prediction</h1>
+
+<p>
+This project trains a <b>chessboard square classifier</b> primarily on <b>synthetic images rendered in Blender</b>,
+and evaluates how well it <b>generalizes to real chessboard images</b>.
+We study <b>generalization from synthetic to real data</b> by measuring:
+<b>(1) zero-shot performance</b> (no real data in training),
+<b>(2) fine-tuned performance</b> (small real dataset),
+and <b>(3) combined training</b> (synthetic + real).
+</p>
+
+<div class="card">
+  <h2>Project Goal</h2>
+  <p>
+  Given a single RGB image of a chessboard, the model predicts the piece class for each of the 64 squares.
+  The per-square predictions are combined into a full board state,
+  converted into a <b>FEN</b> string, and visualized as a chessboard image.
+  </p>
+  <p class="small">
+    Constraints: the model uses <b>a single static image</b> (no temporal information), and occlusions are not explicitly labeled.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Pipeline</h2>
+  <div class="grid">
+    <div>
+      <h3>Step 1: Synthetic → Prediction</h3>
+      <p>
+        Synthetic images are rendered using Blender/PyBlender.
+      </p>
+    </div>
+    <div>
+      <h3>Step 2: Real → Sim-to-Real Transfer</h3>
+      <p>
+        We evaluate zero-shot transfer on real images, then fine-tune using a small real dataset,
+        and finally train on a combined synthetic+real dataset for best overall performance.
+      </p>
+    </div>
+  </div>
+
+  <p><b>Overview figure:</b></p>
+  <img src="images/pipeline.png" alt="Sim-to-Real pipeline overview">
+</div>
+
